@@ -1,0 +1,3 @@
+#!/bin/bash
+DISPLAY=:0.0
+rm -f /tmp/bg.$(whoami).jpg && curl -sL -H "Content-Type: application/json" -X POST -d '{1920,1080}' http://bing.ioliu.cn/v1/rand -o /tmp/bg.$(whoami).jpg && pcmanfm --display :0.0 -w /tmp/bg.$(whoami).jpg
