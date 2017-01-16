@@ -1,3 +1,38 @@
 #!/bin/bash
 DISPLAY=:0.0
-rm -f /tmp/bg.$(whoami).jpg && curl -sL -H "Content-Type: application/json" -X POST -d '{1920,1080}' http://bing.ioliu.cn/v1/rand -o /tmp/bg.$(whoami).jpg && pcmanfm --display :0.0 -w /tmp/bg.$(whoami).jpg
+
+function get_setimage
+{
+    let RAND=${RANDOM}%89+1
+    DATE=$(date -d"${RAND} day ago" "+%Y%m%d" )
+    JSON=$(curl -s "http://www.istartedsomething.com/bingimages/getimage.php?id=${DATE}-cn")
+
+    URL=http://bing.com$(echo ${JSON} | jq .url | tr -d '"'|sed "s/1366x768/1920x1080/")
+
+    STATUS_CODE=$(curl -sL ${URL} -o /tmp/.tmp.bg.$(whoami).jpg -w %{http_code})
+    if [ ${STATUS_CODE} == "200" ]
+        then rm -f /tmp/bg.$(whoami).jpg \
+	    && mv /tmp/.tmp.bg.$(whoami).jpg /tmp/bg.$(whoami).jpg \
+            && pcmanfm --display :0.0 -w /tmp/bg.$(whoami).jpg \
+	    && return 0
+        else
+	    return 1
+    fi
+}
+
+function main
+{
+    RET=1
+    COUNT=0
+    while [ $RET != 0 ]
+        do 
+            get_setimage
+            RET=$?
+	    let COUNT=$COUNT+1
+            if [[ $RET -eq 0 || $COUNT -eq 10 ]]
+                then exit $RET
+            fi
+        done
+}
+
+main
