@@ -8,7 +8,12 @@ function get_setimage
     TODAY=$(date "+%Y%m%d")
     CACHE=/tmp/bingwp_list_${TODAY}
     if [[ ! -s  ${CACHE} ]]
-    then curl -sL "http://www.bing.com/gallery/home/browsedata?z=0" | sed "s/.*browseData=\({[^}]*}\).*/\1/" | jq .imageNames |sed 1d |head -n ${magic}| tr -d "\"" | tr -d "," > ${CACHE}
+    then curl -sL \
+        "http://www.bing.com/gallery/home/browsedata?z=0" \
+	| sed "s/.*browseData=\({[^}]*}\).*/\1/" \
+	| jq .imageNames |sed 1d |head -n ${magic} \
+	| tr -d "\"" | tr -d "," \
+	> ${CACHE}
     fi
     IMAGE_LIST=($(cat ${CACHE}))
     URL=http://cn.bing.com/az/hprichbg/rb/${IMAGE_LIST[$RAND]}_1920x1080.jpg
@@ -25,7 +30,6 @@ function get_setimage
 
 function main
 {
-    RET=1
     COUNT=0
     while true
         do 
