@@ -3,12 +3,15 @@ DISPLAY=:0.0
 
 function get_setimage
 {
-    let RAND=${RANDOM}%89+1
-    DATE=$(date -d"${RAND} day ago" "+%Y%m%d" )
-    JSON=$(curl -s "http://www.istartedsomething.com/bingimages/getimage.php?id=${DATE}-cn")
-
-    URL=http://bing.com$(echo ${JSON} | jq .url | tr -d '"'|sed "s/1366x768/1920x1080/")
-
+    magic=72
+    let RAND=${RANDOM}%${magic}
+    TODAY=$(date "+%Y%m%d")
+    CACHE=/tmp/bingwp_list_${TODAY}
+    if [[ ! -s  ${CACHE} ]]
+    then curl -sL "http://www.bing.com/gallery/home/browsedata?z=0" | sed "s/.*browseData=\({[^}]*}\).*/\1/" | jq .imageNames |sed 1d |head -n ${magic}| tr -d "\"" | tr -d "," > ${CACHE}
+    fi
+    IMAGE_LIST=($(cat ${CACHE}))
+    URL=http://cn.bing.com/az/hprichbg/rb/${IMAGE_LIST[$RAND]}_1920x1080.jpg
     STATUS_CODE=$(curl -sL ${URL} -o /tmp/.tmp.bg.$(whoami).jpg -w %{http_code})
     if [ ${STATUS_CODE} == "200" ]
         then rm -f /tmp/bg.$(whoami).jpg \
@@ -24,7 +27,7 @@ function main
 {
     RET=1
     COUNT=0
-    while [ $RET != 0 ]
+    while true
         do 
             get_setimage
             RET=$?
